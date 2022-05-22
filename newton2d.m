@@ -6,7 +6,7 @@ function xy = newton2d(f,J,xy)
     its = 0;
     while (err>tol) && (its<maxits)
          xyold = xy;
-         xy = xyold - J(xyold)\f(xyold);
+         xy = xyold - J(xyold)*f(xyold);
          err = norm(xy-xyold);
          its = its+1;
     end
