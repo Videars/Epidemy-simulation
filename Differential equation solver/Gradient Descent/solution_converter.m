@@ -1,0 +1,1 @@
+sol_sf = cell2mat(struct2cell(structfun(@double, (load('sol_sf.mat')), 'UniformOutput',false)));
