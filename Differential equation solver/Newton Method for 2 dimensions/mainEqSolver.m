@@ -2,7 +2,7 @@
     Beta = 0.5;
     Mu = 0.2;
     Lam = Beta/Mu;
-    N=10;
+    N = 2;
 % Matrix import
       A_hom = randi(2,N,N) - 1;
       A_hom = A_hom - tril(A_hom,-1) + triu(A_hom,1)';
@@ -10,11 +10,12 @@
 %     A_hom = cell2mat(struct2cell(load('A_hom.mat')));
 %     A_sm = cell2mat(struct2cell(load('A_sm.mat')));
 %     A_sf = cell2mat(struct2cell(load('A_sf.mat')));
+
 if det(A_hom) ~= 0
 % Variables
     disp(det(A_hom));
-    syms x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
-    X = [x1; x2; x3; x4; x5; x6; x7; x8; x9; x10];
+    syms x1 x2
+    X = [x1; x2];
     
 % Functions definition
     f_hom = simplify(Beta*diag(1-X)*A_hom*X-Mu*X);
@@ -38,7 +39,7 @@ if det(A_hom) ~= 0
 %     Jinv_sf = simplify(inv(J_sf));
 
 % Initial guesses
-    x0 = 0.6*ones(10, 1);
+    x0 = 0.6*ones(N, 1);
     sol_hom = vpa(newton(f_hom, Jinv_hom, x0));
 %     sol_sm = vpa(newton(f_sm, Jinv_sm, x0));
 %     sol_sf = vpa(newton(f_sf, Jinv_sf, x0));
