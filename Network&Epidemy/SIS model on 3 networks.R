@@ -19,8 +19,8 @@ library(poweRlaw)
 N = 100 #numero nodi
 simlength <- 300  #giorni di simulazione epidemia
 simlength2 <- 300
-beta <- 0.5  #probabilità di trasmissione virus
-mu <- 0.2  #probabilità che un nodo infetto diventi suscettibile
+beta <- 0.5  #probabilitÃ  di trasmissione virus
+mu <- 0.2  #probabilitÃ  che un nodo infetto diventi suscettibile
 
 
 #----------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ time=seq(from=1,to=simlength,by=1)
 time2=seq(from=1,to=simlength2,by=1)
 
 initial_state_values=c(S=N-1,I=1)  # S=suscettibili, I=infetti 
-parameters=c(mu, beta)  #metto le probabilità in un unico vettore 'parameters'
+parameters=c(mu, beta)  #metto le probabilitÃ  in un unico vettore 'parameters'
 
 
 sis_model <- function(time,state,parameters){
@@ -51,8 +51,6 @@ out_long=melt(output,id="time")
 ggplot(data = out_long,          
        aes(x = time, y = value/N, colour = variable, group = variable)) +  
   geom_line() +xlab("Tempo(giorni)")+ylab("Porzione della popolazione")+scale_color_discrete(name="Stato")
-
-
 
 
 
@@ -82,9 +80,9 @@ plot.spread <- TRUE  #parametro per visualizzare l'andamento epidemico su grafic
 
 links <- generate.network.B(N,2)  #la rete viene generata
 
-infected <- logical(N)  #infected è un vettore logico di dimensione N con True se il nodo è Infetto
+infected <- logical(N)  #infected Ã¨ un vettore logico di dimensione N con True se il nodo Ã¨ Infetto
 patientzero <- sample(N,1)  #viene randomicamente scelto un nodo tra gli N totali
-infected[patientzero] <- TRUE  #a quel nodo randomicamente scelto viene associato il valore True (è il paziente zero)
+infected[patientzero] <- TRUE  #a quel nodo randomicamente scelto viene associato il valore True (Ã¨ il paziente zero)
 
 vettore_num_infetti <- integer(simlength)  #vettore la cui iesima componente contiente il numero di infetti nell'iesimo giorno di pandemia
 vettore_num_suscettibili <- integer(simlength)  #vettore la cui iesima componente contiente il numero di susciettibili nell'iesimo giorno di pandemia
@@ -117,7 +115,7 @@ for (i in 1:simlength){
   print(i)
   
   #Fase infezione#
-  discordant.links <- which(xor(infected[links[,1]],infected[links[,2]]))  #trova gli indici dei nodi che sono collegati e in cui un nodo è infetto e l'altro suscettibile
+  discordant.links <- which(xor(infected[links[,1]],infected[links[,2]]))  #trova gli indici dei nodi che sono collegati e in cui un nodo Ã¨ infetto e l'altro suscettibile
   transmit <- rbinom(length(discordant.links),1,beta)  #determina randomicamente quali dei discordant.links trasmettono il virus
   #aggiornamento del vettore di infezione
   transmitter.links <- discordant.links[transmit==1]
@@ -169,90 +167,15 @@ ggplot(data = out_conf,
 
 
 #----------------------------------------------------------------------------------------
-#EQUAZIONE 7.7#
-#----------------------------------------------------------------------------------------
-
-#studiamo come varia la probabilità di diventare infetto nel tempo
-
-#il numero di Nodi N potrebbe essere troppo elevato per questo studio quindi è stato ridotto a N2
-#volendo si può far capitare il paziente zero negli N2 nodi e togliere i restanti ma si andrebbe ad
-#alterare la struttura del grafo per cui ho preferito costruire un nuovo network per lo studio in questione
-
-# links2 <- generate.network.B(N2,2)
-# network2.i <- graph_from_edgelist(links2)
-# 
-# #troviamo la matrice di connettività
-# a_sf<-matrix(0, N2, N2)
-# for (i in 1:N2) {
-#   for (j in 1:(length(links2)/2)) {
-#     if (links2[j,1]==i){
-#       a_sf[i, links2[j,2]]<-1
-#       a_sf[links2[j,2], i]<-1
-#     }
-#   }
-# }
-# 
-# writeMat('A_sf', x=as.matrix(a_sf))
-
-#risolvo e grafico le eq differenziali
-# sis_IBMF_model <- function(time,state,parameters){
-#   with(as.list(c(state,parameters)),{
-#     lambda=beta/mu
-#     dp.i=-p.i+lambda*(1-p.i)*rowSums(a*p.i)
-#     return(list(dp.i))
-#   }
-#   )
-# }
-
-# output_IBMF<-as.data.frame(ode(y=initial_state_values_IBMF,func = sis_IBMF_model,parms=parameters,times = time))
-# out_long_IBMF=melt(output_IBMF,id="time")
-# ggplot(data = out_long_IBMF,          
-#        aes(x = time, y = value, colour = variable, group = variable)) +  
-#   geom_line() +xlab("Tempo(giorni)")+ylab("Prob che iesimo nodo sia infetto(t)")+scale_color_discrete(name="Stato")
-
-
-# #----------------------------------------------------------------------------------------
-# #studio soglia#
-# 
-# #dalla sezione precendente possiamo ottenere lo jacobiano e determinarne l'autovalore di modulo max
-# lambda=beta/mu
-# Jac <- matrix(0, N2, N2)
-# for (i in 1:N2) {
-#   for (j in 1:N2) {
-#     if (i==j)
-#       Jac[i,j]=1+lambda*a[i,j]
-#     else
-#       Jac[i,j]=lambda*a[i,j]
-#   }
-# }
-# 
-# Aut <- eigen(Jac) #trovo autovalori e autovettori di Jac
-# AutMax1 <- max(abs(Aut$values))  #trovo l'autovalore di max modulo
-# Soglia1 <- 1/AutMax1  #calcolo la soglia
-# 
-# #Metodo teorico
-# k_max <- max(degree(network2.i))
-# k_mean <- mean(degree(network2.i))
-# ksq_mean <- mean((degree(network2.i))^2)
-# AutMax2 <- max(c(k_max, (ksq_mean/k_mean)))
-# Soglia2 <- 1/AutMax2
-# 
-# #calcolo R0 per modello teorico eq diff
-# Ro=beta*N-mu
-# Sendemic=mu/beta
-
-
-
-#----------------------------------------------------------------------------------------
 #GRAFO OMOGENEO#
 #----------------------------------------------------------------------------------------
 
 network_hom.i<-erdos.renyi.game(N, 1/25)
 links_hom <- as_edgelist(network_hom.i)
 
-infected_hom <- logical(N)  #infected è un vettore logico di dimensione N con True se il nodo è Infetto
+infected_hom <- logical(N)  #infected Ã¨ un vettore logico di dimensione N con True se il nodo Ã¨ Infetto
 patientzero_hom <- sample(N,1)  #viene randomicamente scelto un nodo tra gli N totali
-infected_hom[patientzero_hom] <- TRUE  #a quel nodo randomicamente scelto viene associato il valore True (è il paziente zero)
+infected_hom[patientzero_hom] <- TRUE  #a quel nodo randomicamente scelto viene associato il valore True (Ã¨ il paziente zero)
 
 vettore_num_infetti_hom <- integer(simlength)  #vettore la cui iesima componente contiente il numero di infetti nell'iesimo giorno di pandemia
 vettore_num_suscettibili_hom <- integer(simlength)  #vettore la cui iesima componente contiente il numero di susciettibili nell'iesimo giorno di pandemia
@@ -285,7 +208,7 @@ for (i in 1:simlength){
   print(i)
   
   #Fase infezione#
-  discordant.links <- which(xor(infected_hom[links_hom[,1]],infected_hom[links_hom[,2]]))  #trova gli indici dei nodi che sono collegati e in cui un nodo è infetto e l'altro suscettibile
+  discordant.links <- which(xor(infected_hom[links_hom[,1]],infected_hom[links_hom[,2]]))  #trova gli indici dei nodi che sono collegati e in cui un nodo Ã¨ infetto e l'altro suscettibile
   transmit <- rbinom(length(discordant.links),1,beta)  #determina randomicamente quali dei discordant.links trasmettono il virus
   #aggiornamento del vettore di infezione
   transmitter.links <- discordant.links[transmit==1]
@@ -328,49 +251,6 @@ ggplot(data = out_conf_hom,
        aes(x = time, y = value/N, colour = variable, group = variable)) + geom_line() +
   xlab("Tempo(giorni)")+ylab("Porzione della popolazione")+scale_color_discrete(name="Stato")
 
-#----------------------------------------------------------------------------------------
-#matrice connettività hom#
-
-# network3.i <- erdos.renyi.game(N2, 1/12)
-# links3 <- as_edgelist(network3.i)
-# 
-# a_hom<-matrix(0, N2, N2)
-# for (i in 1:N2) {
-#   for (j in 1:(length(links3)/2)) {
-#     if (links3[j,1]==i){
-#       a_hom[i, links3[j,2]]<-1
-#       a_hom[links3[j,2], i]<-1
-#     }
-#   }
-# }
-# 
-# writeMat('A_hom', x=as.matrix(a_hom))
-
-
-# #studio soglia#
-# lambda=beta/mu
-# Jac.hom <- matrix(0, N2, N2)
-# for (i in 1:N2) {
-#   for (j in 1:N2) {
-#     if (i==j)
-#       Jac.hom[i,j]=1+lambda*a.hom[i,j]
-#     else
-#       Jac.hom[i,j]=lambda*a.hom[i,j]
-#   }
-# }
-# 
-# Aut.hom <- eigen(Jac.hom) #trovo autovalori e autovettori di Jac
-# AutMax1.hom <- max(abs(Aut.hom$values))  #trovo l'autovalore di max modulo
-# Soglia1.hom <- 1/AutMax1.hom  #calcolo la soglia
-# 
-# #Metodo teorico
-# k_max.hom <- max(degree(network3.i))
-# k_mean.hom <- mean(degree(network3.i))
-# ksq_mean.hom <- mean((degree(network3.i))^2)
-# AutMax2.hom <- max(c(k_max.hom, (ksq_mean.hom/k_mean.hom)))
-# Soglia2.hom <- 1/AutMax2.hom
-
-
 
 
 #----------------------------------------------------------------------------------------
@@ -401,9 +281,9 @@ for (i in 1:N) {
 
 writeMat('A_sm', x=as.matrix(a_sm))
 
-infected_sm <- logical(N)  #infected è un vettore logico di dimensione N con True se il nodo è Infetto
+infected_sm <- logical(N)  #infected Ã¨ un vettore logico di dimensione N con True se il nodo Ã¨ Infetto
 patientzero_sm <- sample(N,1)  #viene randomicamente scelto un nodo tra gli N totali
-infected_sm[patientzero_sm] <- TRUE  #a quel nodo randomicamente scelto viene associato il valore True (è il paziente zero)
+infected_sm[patientzero_sm] <- TRUE  #a quel nodo randomicamente scelto viene associato il valore True (Ã¨ il paziente zero)
 
 vettore_num_infetti_sm <- integer(simlength)  #vettore la cui iesima componente contiente il numero di infetti nell'iesimo giorno di pandemia
 vettore_num_suscettibili_sm <- integer(simlength)  #vettore la cui iesima componente contiente il numero di susciettibili nell'iesimo giorno di pandemia
@@ -414,7 +294,7 @@ for (i in 1:simlength){
   print(i)
   
   #Fase infezione#
-  discordant.links <- which(xor(infected_sm[links_sm[,1]],infected_sm[links_sm[,2]]))  #trova gli indici dei nodi che sono collegati e in cui un nodo è infetto e l'altro suscettibile
+  discordant.links <- which(xor(infected_sm[links_sm[,1]],infected_sm[links_sm[,2]]))  #trova gli indici dei nodi che sono collegati e in cui un nodo Ã¨ infetto e l'altro suscettibile
   transmit <- rbinom(length(discordant.links),1,beta)  #determina randomicamente quali dei discordant.links trasmettono il virus
   #aggiornamento del vettore di infezione
   transmitter.links <- discordant.links[transmit==1]
@@ -471,46 +351,3 @@ out_conf_hom<-melt(data.frame(output, vettore_num_infetti, vettore_num_suscettib
 ggplot(data = out_conf_hom,
        aes(x = time, y = value/N, colour = variable, group = variable)) + geom_line() +
   xlab("Tempo(giorni)")+ylab("Porzione della popolazione")+scale_color_discrete(name="Stato")
-
-
-#troviamo la matrice di connettività
-# network4.i <- sample_smallworld(1, N2, 2, 0.05)
-# links4 <- as_edgelist(network4.i)
-# 
-# a_sm<-matrix(0, N2, N2)
-# for (i in 1:N2) {
-#   for (j in 1:(length(links4)/2)) {
-#     if (links4[j,1]==i){
-#       a_sm[i, links4[j,2]]<-1
-#       a_sm[links4[j,2], i]<-1
-#     }
-#   }
-# }
-# 
-# writeMat('A_sm', x=as.matrix(a_sm))
-
-
-# #studio soglia#
-# lambda=beta/mu
-# Jac.sm <- matrix(0, N2, N2)
-# for (i in 1:N2) {
-#   for (j in 1:N2) {
-#     if (i==j)
-#       Jac.sm[i,j]=1+lambda*a.sm[i,j]
-#     else
-#       Jac.sm[i,j]=lambda*a.sm[i,j]
-#   }
-# }
-# 
-# Aut.sm <- eigen(Jac.sm) #trovo autovalori e autovettori di Jac
-# AutMax1.sm <- max(abs(Aut.sm$values))  #trovo l'autovalore di max modulo
-# Soglia1.sm <- 1/AutMax1.sm  #calcolo la soglia
-# 
-# #Metodo teorico
-# k_max.sm <- max(degree(network4.i))
-# k_mean.sm <- mean(degree(network4.i))
-# ksq_mean.sm <- mean((degree(network4.i))^2)
-# AutMax2.sm <- max(c(k_max.sm, (ksq_mean.sm/k_mean.sm)))
-# Soglia2.sm <- 1/AutMax2.sm
-
-
